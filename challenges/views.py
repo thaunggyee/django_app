@@ -1,11 +1,11 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.template.loader import render_to_string
 
 monthly_challenges = {
     "january": "Eat no meat for the entire month!",
-    "february": "Walk for at least 20 minutes every day!",
+    "february": None,
     "march": "Learn Django for at least 20 minutes every day!",
     "april": "Eat no meat for the entire month!",
     "may": "Walk for at least 20 minutes every day!",
@@ -15,18 +15,14 @@ monthly_challenges = {
     "september": "Learn Django for at least 20 minutes every day!",
     "october": "Eat no meat for the entire month!",
     "november": "Walk for at least 20 minutes every day!",
-    "december": "Learn Django for at least 20 minutes every day!"
+    "december": None
 }
 def index(request):
-    month_click = ""
     month_list = list(monthly_challenges.keys()) ##["jan","feb","march", ---]
-    for month in month_list: #jan
-        cap_month = month.upper() + " "  #JAN
-        click_link = reverse("month-challenge", args=[month])  ##ip/challenges/january
-        month_click += f"<li><a href=\"{click_link}\">{cap_month}</a></li>" ## . JANUARY
-    style = f"<ul>{month_click}</ul>"
-    return HttpResponse(style)
-
+    return render(request, "challenges/index.html", {
+        "months": month_list
+    })
+ 
 def redirect(request, month): ##ip/challenges/redirrect/1
     mc = list(monthly_challenges.keys()) #list
 
@@ -41,8 +37,12 @@ def month(request, month): #ip/challenges/january
     try:
       month_output = monthly_challenges[month] ##value of january key from dictionary
       html_responese = render_to_string("challenges/challenges.html", {
-          "text": month_output ### text = value 
+          "month": month,
+          "text": month_output ,    ### text = value 
+          "month_upper": month.upper()
       })
       return HttpResponse(html_responese)
     except:
-      return HttpResponseNotFound("Invalid Month")
+    #  error_response = render_to_string("404.html")
+    #  return HttpResponseNotFound(error_response)
+      raise Http404()  ## it will raise 404.html file automatically --> challenges debug mode to false in settings.py
